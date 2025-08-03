@@ -1,6 +1,6 @@
 CXX = g++
-CXXFLAGS = -std=c++17 -Wall -O2
-LDFLAGS = `sdl2-config --libs` -lSDL2
+CXXFLAGS = -std=c++17 -Wall
+LDFLAGS = `sdl2-config --libs` -lSDL2_ttf
 INCLUDES = -IGame -ITetromino -IBoard
 
 SRC = main.cpp Game/Game.cpp Tetromino/Tetromino.cpp Board/Board.cpp
@@ -10,7 +10,7 @@ TARGET = tetris
 all: $(TARGET)
 
 $(TARGET): $(OBJ)
-	$(CXX) -o $@ $^ $(LDFLAGS)
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ $^ $(LDFLAGS)
 
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@

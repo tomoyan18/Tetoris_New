@@ -1,5 +1,6 @@
 #pragma once
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
 #include "../Board/Board.h"
 #include "../Tetromino/Tetromino.h"
 
@@ -7,6 +8,7 @@ class Game {
     public:
         Game();
         ~Game();
+        //メインループ
         void run();
 
     private:
@@ -14,11 +16,27 @@ class Game {
         SDL_Renderer* renderer;
         bool isRunning;
 
+        //スコア用フォントと変数
+        TTF_Font* font;
+        int score;
+
+        //ゲーム内構成
         Board board;
         Tetromino current;
 
+        //自動落下の時間制御
+        Uint32 lastDropTime;
+        //落下間隔（ms）
+        Uint32 dropInterval;
+
+        //入力処理(←→↑↓)回転
         void processInput();
+        //落下処理・固定・次ミノ生成
         void update();
+        //描画(盤面・ミノ・スコア)
         void render();
+
+        //ランダムな新しいミノ生成
+        void spawnNewTetromino();
 
 };

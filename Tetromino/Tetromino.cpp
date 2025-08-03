@@ -109,7 +109,7 @@ void Tetromino::draw(SDL_Renderer* renderer){
     for(int i = 0; i < 4; ++i){
         for(int j = 0; j < 4; ++j){
             if(shape[j][i]){
-                SDL_Rect rect = { (x + 1) * 32, (y + j) * 32, 31, 31};
+                SDL_Rect rect = { (x + i) * 32, (y + j) * 32, 31, 31};
                 SDL_RenderFillRect(renderer, &rect);
             }
         }
