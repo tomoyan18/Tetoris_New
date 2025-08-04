@@ -1,56 +1,52 @@
+// Game.h
 #pragma once
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
-#include "../Board/Board.h"
-#include "../Tetromino/Tetromino.h"
+#include "Board.h"
+#include "Tetromino.h"
+#include <deque>
+#include <random>
 
-enum class GameState{
+// ★追加: ゲーム状態の定義（タイトル、プレイ中、ゲームオーバー）
+enum class GameState {
     TITLE,
     PLAYING,
     GAMEOVER
 };
 
 class Game {
-    public:
-        Game();
-        ~Game();
-        //メインループ
-        void run();
+public:
+    Game();
+    ~Game();
+    void run();
 
-    private:
-        SDL_Window* window;
-        SDL_Renderer* renderer;
-        bool isRunning;
+private:
+    SDL_Window* window;
+    SDL_Renderer* renderer;
+    TTF_Font* font;
+    bool isRunning;
 
-        //状態管理
-        GameState state;
+    GameState state; // ★追加: 現在のゲーム状態
 
-        //スコア用フォントと変数
-        TTF_Font* font;
-        int score;
+    Board board;
+    Tetromino current;
 
-        //ゲーム内構成
-        Board board;
-        Tetromino current;
+    Uint32 lastDropTime;
+    Uint32 dropInterval;
 
-        //自動落下の時間制御
-        Uint32 lastDropTime;
-        //落下間隔（ms）
-        Uint32 dropInterval;
+    int score;
 
-        //入力処理(←→↑↓)回転
-        void processInput();
-        //落下処理・固定・次ミノ生成
-        void update();
-        //描画(盤面・ミノ・スコア)
-        void render();
+    std::deque<TetrominoType> nextBag; // ★追加: 次のミノを管理する7バッグ方式
+    std::mt19937 rng; // ★追加: 乱数生成器
 
-        //ランダムな新しいミノ生成
-        void spawnNewTetromino();
+    void processInput();
+    void update();
+    void render();
 
-        //状態別描画/更新
-        void renderTitle();
-        void renderGameOver();
-        //リトライ処理
-        void resetGame();
+    void renderTitle(); // ★追加: タイトル画面描画
+    void renderGameOver(); // ★追加: ゲームオーバー画面描画
+
+    void spawnNewTetromino();
+    void resetGame();
+    void fillNextBag(); // ★追加: 7種のテトロミノをシャッフルしてバッグに追加
 };

@@ -4,6 +4,12 @@
 #include <ctime>
 #include <string>
 
+#include "Game.h"
+#include <iostream>
+#include <cstdlib>
+#include <ctime>
+#include <string>
+
 //コンストラクタ
 Game::Game(){
     SDL_Init(SDL_INIT_VIDEO);
@@ -22,7 +28,11 @@ Game::Game(){
     srand(static_cast<unsigned>(time(0)));
 
     state = GameState::TITLE;
+    
+    std::random_device rd;
+    rng = std::mt19937(rd());
 
+    fillNextBag();
     //最初のミノ生成
     spawnNewTetromino();
     lastDropTime = SDL_GetTicks();
@@ -30,6 +40,7 @@ Game::Game(){
     dropInterval = 500;
 }
 
+//デストラクタ
 Game::~Game(){
     TTF_CloseFont(font);
     SDL_DestroyRenderer(renderer);
@@ -37,6 +48,19 @@ Game::~Game(){
     TTF_Quit();
     SDL_Quit();
 }
+
+//７種類のテトロミノをシャッフルしてnextBangに詰める
+void Game::fillNextBag() {
+    std::vector<TetrominoType> bag = {
+        TetrominoType::I, TetrominoType::O, TetrominoType::S,
+        TetrominoType::Z, TetrominoType::L, TetrominoType::J, TetrominoType::T
+    };
+    std::shuffle(bag.begin(), bag.end(), rng);
+    for (const auto& t : bag) {
+        nextBag.push_back(t);
+    }
+}
+
 
 //新しいランダムなミノを生成
 void Game::spawnNewTetromino(){
