@@ -84,7 +84,7 @@ void Board::clearLines(int& score){
             }
             grid[0] = std::vector<int>(WIDTH, 0);
             //スコア加算(１行１点)
-            ++score;
+            score += 10;
             //詰めた分を再確認する
             ++y;
         }

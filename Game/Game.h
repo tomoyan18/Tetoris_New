@@ -4,6 +4,12 @@
 #include "../Board/Board.h"
 #include "../Tetromino/Tetromino.h"
 
+enum class GameState{
+    TITLE,
+    PLAYING,
+    GAMEOVER
+};
+
 class Game {
     public:
         Game();
@@ -15,6 +21,9 @@ class Game {
         SDL_Window* window;
         SDL_Renderer* renderer;
         bool isRunning;
+
+        //状態管理
+        GameState state;
 
         //スコア用フォントと変数
         TTF_Font* font;
@@ -39,4 +48,9 @@ class Game {
         //ランダムな新しいミノ生成
         void spawnNewTetromino();
 
+        //状態別描画/更新
+        void renderTitle();
+        void renderGameOver();
+        //リトライ処理
+        void resetGame();
 };

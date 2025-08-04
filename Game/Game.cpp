@@ -20,6 +20,9 @@ Game::Game(){
 
     isRunning = true;
     srand(static_cast<unsigned>(time(0)));
+
+    state = GameState::TITLE;
+
     //最初のミノ生成
     spawnNewTetromino();
     lastDropTime = SDL_GetTicks();
@@ -59,7 +62,14 @@ void Game::processInput(){
         {
             isRunning = false;
         }
-        else if(e.type == SDL_KEYDOWN)
+        else if(state == GameState::TITLE && e.type == SDL_KEYDOWN)
+        {
+            if(e.key.keysym.sym == SDLK_RETURN)
+            {
+                state = GameState::PLAYING;
+            }
+        }
+        else if(state == GameState::PLAYING && e.type == SDL_KEYDOWN)
         {
             switch (e.key.keysym.sym) {
                 case SDLK_LEFT:
@@ -83,10 +93,26 @@ void Game::processInput(){
                     break;
             }
         }
+        else if(state ==GameState::GAMEOVER && e.type == SDL_KEYDOWN)
+        {
+            if(e.key.keysym.sym == SDLK_r)
+            {
+                //リトライ
+                resetGame();
+                state = GameState::PLAYING;
+            }
+            else if (e.key.keysym.sym == SDLK_t)
+            {
+                //タイトル
+                state = GameState::TITLE;
+            }    
+        }
     }
 }
 
 void Game::update(){
+    if(state != GameState::PLAYING) return;
+
     Uint32 now = SDL_GetTicks();
     if(now - lastDropTime > dropInterval)
     {
@@ -103,7 +129,7 @@ void Game::update(){
             if(board.isCollision(current))
             {
                 std::cout << "Game Over! Score: " << score << std::endl;
-                isRunning = false;
+                state = GameState::GAMEOVER;
             }
         }
         lastDropTime = now;
@@ -114,18 +140,70 @@ void Game::render(){
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
 
-    board.draw(renderer);
-    current.draw(renderer);
+    if(state == GameState::TITLE)
+    {
+        renderTitle();
+    }
+    else if(state == GameState::PLAYING)
+    {
+        board.draw(renderer);
+        current.draw(renderer);
 
-    //スコア表示
+        //スコア表示
+        SDL_Color white = {255, 255, 255};
+        std::string scoreText = "Score: " + std::to_string(score);
+        SDL_Surface* surface = TTF_RenderText_Solid(font, scoreText.c_str(), white);
+        SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+        SDL_Rect dstRect = {10, 10, surface->w, surface->h};
+        SDL_RenderCopy(renderer, texture, NULL, &dstRect);
+        SDL_FreeSurface(surface);
+        SDL_DestroyTexture(texture);
+    }
+    else if(state == GameState::GAMEOVER)
+    {
+        renderGameOver();
+    }
+    SDL_RenderPresent(renderer);
+}
+
+void Game::renderTitle() {
     SDL_Color white = {255, 255, 255};
-    std::string scoreText = "Score: " + std::to_string(score);
-    SDL_Surface* surface = TTF_RenderText_Solid(font, scoreText.c_str(), white);
+    SDL_Surface* surface = TTF_RenderText_Solid(font, "TETRIS", white);
     SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
-    SDL_Rect dstRect = {10, 10, surface->w, surface->h};
-    SDL_RenderCopy(renderer, texture, NULL, &dstRect);
+    SDL_Rect dst = {80, 200, surface->w, surface->h};
+    SDL_RenderCopy(renderer, texture, NULL, &dst);
     SDL_FreeSurface(surface);
     SDL_DestroyTexture(texture);
 
-    SDL_RenderPresent(renderer);
+    surface = TTF_RenderText_Solid(font, "Press Enter to Start", white);
+    texture = SDL_CreateTextureFromSurface(renderer, surface);
+    dst = {50, 250, surface->w, surface->h};
+    SDL_RenderCopy(renderer, texture, NULL, &dst);
+    SDL_FreeSurface(surface);
+    SDL_DestroyTexture(texture);
+}
+
+void Game::renderGameOver() {
+    SDL_Color red = {255, 100, 100};
+    SDL_Surface* surface = TTF_RenderText_Solid(font, "Game Over", red);
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+    SDL_Rect dst = {80, 200, surface->w, surface->h};
+    SDL_RenderCopy(renderer, texture, NULL, &dst);
+    SDL_FreeSurface(surface);
+    SDL_DestroyTexture(texture);
+
+    SDL_Color white = {255, 255, 255};
+    surface = TTF_RenderText_Solid(font, "R: Retry  T: Title", white);
+    texture = SDL_CreateTextureFromSurface(renderer, surface);
+    dst = {50, 250, surface->w, surface->h};
+    SDL_RenderCopy(renderer, texture, NULL, &dst);
+    SDL_FreeSurface(surface);
+    SDL_DestroyTexture(texture);
+}
+
+void Game::resetGame(){
+    score = 0;
+    board = Board();    //フィールド初期化
+    spawnNewTetromino();//新しいミノ
+    lastDropTime = SDL_GetTicks();
 }
